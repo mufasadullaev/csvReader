@@ -1,0 +1,90 @@
+﻿@model List<synelApp.Models.Employee>
+
+@{
+    ViewData["Title"] = "Employee List";
+}
+
+<h2>Employee List</h2>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success">@TempData["Success"]</div>
+}
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger">@TempData["Error"]</div>
+}
+
+<form method="post" enctype="multipart/form-data" asp-action="Import"> <!-- call import method when submitted -->
+    <div class="form-group d-flex justify-content-between align-content-center my-4">
+        <input type="file" name="file" class="form-control me-4" />
+        <button type="submit" class="btn btn-primary">Import</button>
+    </div>
+</form>
+
+<table class="table table-bordered" id="employeesTable">
+    <thead>
+        <tr>
+            <th>Payroll Number</th>
+            <th>Forename</th>
+            <th>Surname</th>
+            <th>Date of Birth</th>
+            <th>Telephone</th>
+            <th>Mobile</th>
+            <th>E-mail</th>
+            <th>Start Date</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var employee in Model) // displaying the data from db
+        {
+            <tr>
+                <!-- editable cells in DataTable Jquery-->
+                <td>@employee.Payroll_Number</td>
+                <td contenteditable="true" data-id="@employee.Id" data-column="Forenames">@employee.Forenames</td>
+                <td contenteditable="true" data-id="@employee.Id" data-column="Surname">@employee.Surname</td>
+                <td contenteditable="true" data-id="@employee.Id" data-column="Date_of_Birth">@employee.Date_of_Birth.ToString("yyyy-MM-dd")</td>
+                <td contenteditable="true" data-id="@employee.Id" data-column="Telephone">@employee.Telephone</td>
+                <td contenteditable="true" data-id="@employee.Id" data-column="Mobile">@employee.Mobile</td>
+                <td contenteditable="true" data-id="@employee.Id" data-column="EMail_Home">@employee.EMail_Home</td>
+                <td contenteditable="true" data-id="@employee.Id" data-column="Start_Date">@employee.Start_Date.ToString("yyyy-MM-dd")</td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+@section Scripts {
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script> <!-- importing DataTables library for the grid -->
+    <script>
+        $(document).ready(function () {
+            $('#employeesTable').DataTable({ // making the grid employeesTable a DataTable that has sorting, searching, pagination and entries
+                "order": [[2, "asc"]] // order by 2nd col "Surname" ascending
+            });
+
+            $('#employeesTable').on('keypress', '[contenteditable]', function (event) {
+            if (event.which === 13) { // when "enter" pressed - >
+                event.preventDefault(); // default even turned off "new row"
+                $(this).blur(); // call blur event to save changes using AJAX
+            }
+        });
+
+        $('#employeesTable').on('blur', '[contenteditable]', function () {
+            var id = $(this).data('id'); // get row edited
+            var column = $(this).data('column'); // get column edited
+            var value = $(this).text().trim(); // remove extra spaces and get new value
+
+            $.ajax({ // ajax post request to save new values without refresh
+                url: '/Employee/UpdateField',
+                type: 'POST',
+                data: { id: id, column: column, value: value },
+                success: function () {
+                    console.log("Updated successfully!");
+                },
+                error: function () {
+                    alert("Error updating the field.");
+                }
+            });
+        });
+        });
+    </script>
+}
