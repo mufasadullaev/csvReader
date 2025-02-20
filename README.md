@@ -1,5 +1,5 @@
 # csvReader
--- ASP .NET Core MVC with Entity Framework 9.0
+-- ASP .NET Core MVC with Entity Framework 8.0
 -- Database - SQL Server
 # Installation guide:
 -- Add-Migration 'Name'
